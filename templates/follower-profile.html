@@ -1,0 +1,77 @@
+{% extends "index.html" %}
+{% load static %}
+
+{% block user-welcome %}
+<div class="top-area">
+  <ul class="main-menu2">
+    <p>Welcome, {{ request.user.username }}</p>
+  </ul>
+  <div class="user-img">
+    <img src="{% static 'images/resources/admin.jpg' %}" alt="">
+  </div>
+</div>
+{% endblock %}
+
+
+{% block content %}
+
+<style>
+  body {
+    background: #f4f2f2;
+  }
+  .profile-pic {
+    width: 10rem;
+    height: 10rem;
+    margin: 0 auto;
+    border: 1px solid black;
+    border-radius: 50%;
+  }
+</style>
+
+<div class="container mt-5">
+  <div class="card mb-3 p-5">
+    <div class="row g-0">
+      <div class="col-md-2">
+        <img class="profile-pic" src="{% static 'images/resources/admin.jpg' %}" class="img-fluid rounded-start" alt="...">
+      </div>
+      <div class="col-md-9">
+        <div class="card-body">
+          <h1 class="card-title">{{ account.user }}</h1>
+          <div class="d-flex justify-content-around">
+            <p><span>{{ like }}</span> Likes</p>
+            <p><span>{{ followers }}</span> Followers</p>
+            <p><span>{{ following }}</span> Following</p>
+          </div>
+          {% if follow %}
+          <a href="{% url 'remove_followee' id=account.id %}" title="" class="add-butn" data-ripple="">Unfollow</a>
+          {% else %}
+          <!-- <a href="{% url 'add_followee' id=account.id %}" class="btn btn-small btn-primary">Follow</a> -->
+          <a href="{% url 'add_followee' id=account.id %}" title="" class="add-butn" data-ripple="">Follow</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  <br>
+  <h3>POSTS</h3>
+  <br>
+  {% if post_show %}
+  <div class="container text-center bg-white">
+    <div class="row row-cols-md-3 row-cols-1">
+      {% if posts %}
+      {% for post in posts %}
+      <div class="col">{{ post.post|safe }}</div>
+      {% endfor %}
+      {% else %}
+      <div class="col w-100">{{ account.user }} hasn't posted anything yet</div>
+      {% endif %}
+      <!-- ><div class="col">Column</div>
+      <div class="col">Column</div>
+      <div class="col">Column</div -->
+    </div>
+  </div>
+  {% else %}
+  <h4 class="text-center">Follow {{ account.user }} to see their posts</h4>
+  {% endif %}
+</div>
+{% endblock %}

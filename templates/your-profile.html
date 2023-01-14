@@ -1,0 +1,173 @@
+{% extends "index.html" %}
+{% load static %}
+
+{% block user-welcome %}
+<div class="top-area">
+  <ul class="main-menu2">
+    <p>Welcome, {{ request.user.username }}</p>
+  </ul>
+</div>
+{% endblock %}
+
+
+{% block content %}
+<style>
+  body {
+    background: #f4f2f2;
+  }
+  .profile-pic {
+    width: 10em;
+    height: 10rem;
+    margin: 0 auto;
+    border: 1px solid black;
+    border-radius: 50%;
+  }
+
+  .post-grid {
+    position: relative;
+
+  }
+
+  .post-grid:hover {
+    border: 3px solid black;
+  }
+
+  .close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-size: 40px;
+    font-weight: bold;
+    color: red;
+  }
+
+  .close-link {
+    color: red;
+    text-decoration: none;
+  }
+
+  .hide {
+    display: none;
+  }
+</style>
+
+<section>
+  <div class="gap gray-bg">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="row" id="page-contents">
+            <div class="col-lg-3">
+              <aside class="sidebar static">
+                <div class="widget">
+                  <h4 class="widget-title">Shortcuts</h4>
+                  <ul class="naves">
+                    <li>
+                      <i class="ti-clipboard"></i>
+                      <a href="{% url 'home' %}" title="">Home</a>
+                    </li>
+                    <li>
+                      <i class="ti-user"></i>
+                      <a href="{% url 'settings' %}" title="">Your Profile</a>
+                    </li>
+                    <li>
+                      <i class="ti-power-off"></i>
+                      <a href="{% url 'logout' %}" title="">Logout</a>
+                    </li>
+                  </ul>
+                </div>
+              </aside>
+            </div>
+            <div class="col-lg-9  mx-3 mx-lg-0">
+              <div class="container pt-5">
+                <div class="row">
+                  <div class="col-lg-3">
+                    <div class="card card-body">
+                      <hr>
+                      <h3 class="text-center">Your Profile</h3>
+                      <hr>
+                      <img class="profile-pic" src="{{ account.profile_pic.url }}">
+                      <br>
+                      <hr>
+                      <p>Username: {{ account.user }}</p>
+                      <p>Email: {{ account.email }}</p>
+                      <p>Full Name: {{ account.full_name }}</p>
+                    </div>
+                  </div>
+                
+                  <div class="col-lg-6">
+                    <div class="card card-body">
+                      <form method="POST" action="" enctype = multipart/form-data>
+                        {% csrf_token %}
+                        <div class="mb-3 mx-3 row">
+                          <div class="col-sm-4">
+                            Name
+                          </div>
+                          <div class="col-sm-8">
+                            {{ form.full_name }}
+                          </div>
+                        </div>
+                        <div class="mb-3 mx-3 row">
+                          <div class="col-sm-4">
+                            Email
+                          </div>
+                          <div class="col-sm-8">
+                            {{ form.email }}
+                          </div>
+                        </div>
+                        <div class="mb-3 mx-3 row">
+                          <div class="col-sm-4">
+                            Profile Pic
+                          </div>
+                          <div class="col-sm-8">
+                            {{ form.profile_pic }}
+                          </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                      </form>
+                    </div>
+                  </div>
+                
+                </div>
+                <br>
+                <div class="row bg-white">
+                  <h3 class="mb-5 pt-3 mx-5">POSTS</h3>
+                  <br>
+                  <div class="container text-center">
+                    <div class="row row-cols-md-3 row-cols-1">
+                      {% if posts.exists %}
+                      {% for post in posts %}
+                      <div class="post-grid col">{{ post.post|safe }}<span class="close hide"><a class="close-link" href="{% url 'delete_post' id=post.id %}">X</a></span></div>
+                      
+                      {% endfor %}
+                      {% else %}
+                      <div class="col w-100">You haven't posted anything yet</div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  grid = document.querySelectorAll(`.post-grid`)
+  btnClose = document.querySelectorAll(`.close`)
+  
+  grid.forEach((x,i) => {
+    x.addEventListener('mouseover', () =>{
+    btnClose[i].classList.remove('hide')
+    })
+    x.addEventListener('mouseout', () =>{
+      btnClose[i].classList.add('hide')
+    })
+  })
+  
+  btnClose.classList.add('hide')
+</script>
+{% endblock %}

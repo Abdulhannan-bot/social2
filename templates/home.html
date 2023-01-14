@@ -1,0 +1,283 @@
+{% extends "index.html" %}
+{% load static %}
+
+{% block user-welcome %}
+<div class="top-area">
+  <ul class="main-menu2">
+    <p>Welcome, {{ request.user.username }}</p>
+  </ul>
+  <div class="user-img">
+    <img src="" alt="">
+    <!-- {{ request.user.account.profile_pic.url }} -->
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<style>
+  .hide {
+    display: none;
+  }
+</style>
+<section>
+  <div class="gap gray-bg">
+    <div class="container-fluid">
+      <div class="container bg-gray mb-5">
+        {% if not count %}
+        <form action="{% url 'home' %}" class="mx-3" method="POST">
+          {% csrf_token %}
+          <input type="search" placeholder="Search Contacts..." class="form-control" name="searched" value="{{ value }}">
+        </form>
+        {% endif %}
+      </div>
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="row" id="page-contents">
+            {% if count %}
+            <div class="col-lg-3">
+              <aside class="sidebar static">
+                <div class="widget">
+                  <h4 class="widget-title">Shortcuts</h4>
+                  <ul class="naves">
+                    <li>
+                      <i class="ti-clipboard"></i>
+                      <a href="{% url 'home' %}" title="">Home</a>
+                    </li>
+                    <li>
+                      <i class="ti-user"></i>
+                      <a href="{% url 'settings' %}" title="">Your Profile</a>
+                    </li>
+                    <li>
+                      <i class="ti-power-off"></i>
+                      <a href="{% url 'logout' %}" title="">Logout</a>
+                    </li>
+                  </ul>
+                </div>
+                <div class="widget stick-widget">
+                  <h4 class="widget-title">People you follow</h4>
+                  <ul class="followers">
+                    {% for follow in following %}
+                    <li>
+                      <figure><img src="{{ follow.followee_id.profile_pic.url }}" alt=""></figure>
+                      <div class="friend-meta">
+                        <h4><a href="{% url 'follower_profile' id=follow.followee_id.id %}" title="">{{ follow.followee_id }}</a></h4>
+                      </div>
+                    </li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              </aside>
+            </div>
+            
+            <div class="col-lg-6">
+              <div class="central-meta">
+                <div class="new-postbox">
+                  <figure>
+                    <img src="{{ request.user.account.profile_pic.url }}" alt="">
+                  </figure>
+                  <div class="newpst-input">
+                    <form method="post" enctype="multipart/form-data" action="{% url 'add_post' %}">
+                      {% csrf_token %}
+                      <!-- <textarea rows="2" placeholder="write something"></textarea> -->
+                      <div style="max-width: 40rem; max-height: 10rem; overflow: scroll;">
+                        {{ formset.management_form }}
+                        {% for form in formset %}
+                        {{ form.media }}
+                        {{ form.post|safe }}
+                        {% endfor %}
+                      </div>
+                      
+                      <div class="attachments">
+                        <ul>
+                          <li>
+                            <button type="submit">Post</button>
+                          </li>
+                        </ul>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+              <div class="central-meta item">
+                <div class="user-post">
+                  {% if posts %}
+                  {% for post in posts %}
+                  <div class="friend-info">
+                    <figure>
+                      <img src="{{ post.user_id.profile_pic.url }}" alt="">
+                    </figure>
+                    <div class="friend-name">
+                      {% if post.user_id == request.user.account %}
+                      <ins>You posted this</ins>
+                      {% else %}
+                      <ins><a href="{% url 'follower_profile' id=post.user_id.id %}" title="">{{ post.user_id }}</a></ins>
+                      {% endif %}
+                      <span>published: {{ post.created_at }}</span>
+                    </div>
+                    <div class="post-meta">
+                      <!-- <img src="{% static 'images/resources/user-post.jpg' %}" alt=""> -->
+                      <div class="border">{{ post.post|safe }}</div>
+                      <div class="we-video-info">              
+                        <ul>
+                          <li>
+                            <span class="comment" data-toggle="tooltip" title="Comments">
+                              <i class="fa fa-comments-o"></i>
+                            </span>
+                          </li>
+                          {% if post.user_id != request.user.account %}
+                          {% if post.post in likes_list %}
+                          <li>
+                            <span class="dislike" data-toggle="tooltip" title="dislike">
+                              <a href="{% url 'unlike' id=post.id %}"><i class="ti-heart-broken"></i></a>
+                            </span>
+                          </li>
+                          {% else %}
+                          <li>
+                            <span class="like" data-toggle="tooltip" title="like">
+                              <a href="{% url 'likes' id=post.id %}"><i class="ti-heart"></i></a>
+                            </span>
+                          </li>
+                          {% endif %}
+                          {% endif %}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="coment-area mb-5">
+                    <ul class="we-comet">
+                      {% for i in post.comment_set.all %}
+                      <li>
+                        <div class="comet-avatar">
+                          <img src="{{ i.user_id.profile_pic.url }}" alt="">
+                        </div>
+                        <div class="we-comment">
+                          <div class="coment-head">
+                            <h5><a href="{{ i.user_id.profile_pic.url }}" title="">{{ i.user_id }}</a></h5>
+                            <span>{{ i.created_at }}</span>
+                            <a class="we-reply" href="#" title="Reply"><i class="fa fa-reply"></i></a>
+                          </div>
+                          <p>{{ i.text }}</p>
+                        </div>
+                      </li>
+                      {% endfor %}
+                      {% if post.user_id != request.user.account %}
+                      <li class="post-comment">
+                        <div class="comet-avatar">
+                          <img src="{{ request.user.account.profile_pic.url }}" alt="">
+                        </div>
+                        <div class="post-comt-box">
+                          <form method="post" action="{% url 'add_comment' id=post.id %}">
+                            {% csrf_token %}
+                            {{ comments_form.text }}
+                            <button type="submit" style="color: rgb(38, 38, 199);">Send</button>
+                          </form>	
+                        </div>
+                      </li>
+                      {% endif %}
+                    </ul>
+                  </div>
+                  <hr>
+                  {% endfor %}
+                  {% else %}
+                  <div class="fied-info">
+                    <p class="text-center">
+                      Posts will appear here.
+                    </p>
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-3">
+              <aside class="sidebar static">
+                <!-- <div class="widget friend-list stick-widget">
+                  <h4 class="widget-title">Suggested for you</h4>
+                  <form action="{% url 'home' %}" class="mx-3" method="POST">
+                    {% csrf_token %}
+                    <input type="search" placeholder="Search Contacts..." class="form-control" name="searched" value="{{ value }}">
+                  </form>
+                  <ul id="people-list" class="friendz-list">
+                    {% for acc in account_search %}
+                    <a href="{% url 'add_followee' id=acc.id %}">click</a>
+                    <li>
+                      <figure>
+                        <img src="" alt="">
+                      </figure>
+                      <div class="friendz-meta">
+                        <a href="{% url 'add_followee' id=acc.id %}">click</a>
+                        <a href="{% url 'follower_profile' id=acc.id %}">{{ acc.user }}</a>
+                        <small><a href="{% url 'add_followee' id=acc.id %}" title="" class="underline">Follow</a></small>
+                        <i><a href="https://wpkixx.com/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="a0d7c9ced4c5d2d3cfccc4c5d2e0c7cdc1c9cc8ec3cfcd">[email&#160;protected]</a></i>
+                      </div>
+                    </li>
+                    {% endfor %}
+                  </ul>
+                </div> -->
+                <div class="widget stick-widget">
+                  <h4 class="widget-title">People you follow</h4>
+                  <form action="{% url 'home' %}" class="mx-3" method="POST">
+                    {% csrf_token %}
+                    <input type="search" placeholder="Search Contacts..." class="form-control" name="searched" value="{{ value }}">
+                  </form>
+                  <br>
+                  <ul class="followers">
+                    {% for acc in account_search %}
+                    <li>
+                      <figure><img src="{{ acc.profile_pic.url }}" alt=""></figure>
+                      <div class="friend-meta">
+                        <h4><a href="{% url 'follower_profile' id=acc.id %}" title="">{{ acc.user }}</a></h4>
+                        <small><a href="" title="" class="underline">Follow</a></small>
+                      </div>
+                    </li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              </aside>
+            </div>
+            {% else %}
+            <div class="col-lg-12">
+              <div class="central-meta">
+                <div class="frnds">
+                
+                  <!-- Tab panes -->
+                  <div class="tab-content">
+                    <div class="tab-pane active fade show " id="frends" >
+                      <ul class="nearby-contct">
+                        {% for acc in account_search %}
+                        <li>
+                          <div class="nearly-pepls">
+                            <figure>
+                              <a href="time-line.html" title=""><img src="{{ acc.profile_pic.url }}" alt=""></a>
+                            </figure>
+                            <div class="pepl-info">
+                              <h4 style="text-transform: none;"><a href="time-line.html" title="">{{ acc.user }}</a></h4>
+                              <a href="{% url 'add_followee' id=acc.id %}" title="" class="add-butn" data-ripple="">Follow</a>
+                            </div>
+                          </div>
+                        </li>
+                        {% endfor %}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>	
+            </div>
+            {% endif %}
+          </div>	
+        </div>
+      </div>
+    </div>
+  </div>	
+</section>
+
+<script>
+  commentBody = document.querySelectorAll(`.coment-area`)
+  comment = document.querySelectorAll(`.comment`)
+
+  comment.forEach((x,i) => {
+    x.addEventListener('click', (e) => {
+      commentBody[i].classList.toggle('hide');
+    })
+  })
+</script>
+{% endblock %}
